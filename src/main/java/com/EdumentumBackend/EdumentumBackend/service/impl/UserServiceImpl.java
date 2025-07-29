@@ -34,6 +34,7 @@ public class UserServiceImpl implements UserService {
                 .gmail(userRequestDto.getGmail())
                 .password(passwordEncoder.encode(userRequestDto.getPassword()))
                 .isActive(true)
+                .username(userRequestDto.getUsername())
                 .role(Role.ROLE_STUDENT)
                 .build();
 
@@ -43,17 +44,19 @@ public class UserServiceImpl implements UserService {
                 .userId(savedUser.getUserId())
                 .gmail(savedUser.getGmail())
                 .isActive(savedUser.getIsActive())
+                .username(savedUser.getUsername())
                 .role(savedUser.getRole())
                 .build();
     }
 
     @Override
-    public UserResponseDto getByUsername(String gmail) {
+    public UserResponseDto getByGmail(String gmail) {
         UserEntity user = userRepository.findByGmail(gmail)
                 .orElseThrow(() -> new NotFoundException("User with gmail " + gmail + " not found"));
         return UserResponseDto.builder()
                 .userId(user.getUserId())
                 .gmail(user.getGmail())
+                .username(user.getUsername())
                 .isActive(user.getIsActive())
                 .role(user.getRole())
                 .build();

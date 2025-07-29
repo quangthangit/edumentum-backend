@@ -10,6 +10,7 @@ import lombok.*;
 @AllArgsConstructor
 public class UserResponseDto {
     private Long userId;
+    private String username;
     private String gmail;
     private Role role;
     private Boolean isActive;

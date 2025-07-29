@@ -23,6 +23,11 @@ public class UserEntity {
     @Column(nullable = false, unique = true)
     private String gmail;
 
+    @NotNull(message = "Username is required")
+    @Size(min = 20, message = "Username must be at least 20 characters long")
+    @Column(nullable = false)
+    private String username;
+
     @NotBlank(message = "Password is required")
     @Size(min = 6, message = "Password must be at least 6 characters long")
     @Column(nullable = false)
