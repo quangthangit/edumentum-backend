@@ -15,17 +15,13 @@ public class GoogleTokenVerifierService {
     @Value("${google.clientID}")
     private String clientID;
 
-    private final GoogleIdTokenVerifier verifier;
-
-    public GoogleTokenVerifierService() {
-        this.verifier = new GoogleIdTokenVerifier.Builder(
+    public GoogleIdToken.Payload verifyToken(String idTokenString) throws Exception {
+        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
                 new NetHttpTransport(),
                 new GsonFactory())
                 .setAudience(Collections.singletonList(clientID))
                 .build();
-    }
 
-    public GoogleIdToken.Payload verifyToken(String idTokenString) throws Exception {
         GoogleIdToken idToken = verifier.verify(idTokenString);
         if (idToken != null) {
             return idToken.getPayload();

@@ -24,7 +24,7 @@ public class UserEntity {
     private String gmail;
 
     @NotNull(message = "Username is required")
-    @Size(min = 20, message = "Username must be at least 20 characters long")
+    @Size(max = 20, message = "Username must be at most 20 characters long")
     @Column(nullable = false)
     private String username;
 

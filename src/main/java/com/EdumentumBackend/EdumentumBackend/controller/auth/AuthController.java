@@ -1,6 +1,7 @@
 package com.EdumentumBackend.EdumentumBackend.controller.auth;
 
 import com.EdumentumBackend.EdumentumBackend.dtos.UserRequestDto;
+import com.EdumentumBackend.EdumentumBackend.dtos.UserRequestLoginDto;
 import com.EdumentumBackend.EdumentumBackend.dtos.UserResponseDto;
 import com.EdumentumBackend.EdumentumBackend.exception.AuthenticationFailedException;
 import com.EdumentumBackend.EdumentumBackend.exception.NotFoundException;
@@ -44,18 +45,18 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody UserRequestDto userRequestDto) {
+    public ResponseEntity<?> login(@Valid @RequestBody UserRequestLoginDto userRequestLoginDto) {
         try {
             Authentication authentication = authManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            userRequestDto.getGmail(),
-                            userRequestDto.getPassword()
+                            userRequestLoginDto.getGmail(),
+                            userRequestLoginDto.getPassword()
                     )
             );
 
             String token = jwtService.generateToken(authentication);
             String tokenRefresh = jwtService.generateRefreshToken(authentication);
-            UserResponseDto user = userService.getByGmail(userRequestDto.getGmail());
+            UserResponseDto user = userService.getByGmail(userRequestLoginDto.getGmail());
 
             return ResponseEntity.ok(Map.of(
                     "status", "success",
