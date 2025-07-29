@@ -1,7 +1,9 @@
 package com.EdumentumBackend.EdumentumBackend.dtos;
 
-import com.EdumentumBackend.EdumentumBackend.entity.Role;
+import com.EdumentumBackend.EdumentumBackend.entity.RoleEntity;
 import lombok.*;
+
+import java.util.Set;
 
 @Getter
 @Setter
@@ -12,6 +14,6 @@ public class UserResponseDto {
     private Long userId;
     private String username;
     private String gmail;
-    private Role role;
+    private Set<RoleEntity> roles;
     private Boolean isActive;
 }

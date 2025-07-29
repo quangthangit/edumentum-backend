@@ -23,50 +23,33 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
 
-    @Autowired
-    private AuthenticationManager authManager;
-
-    @Autowired
-    private JwtService jwtService;
-
-    @Autowired
-    private UserService userService;
-
+    private final AuthenticationManager authManager;
+    private final JwtService jwtService;
+    private final UserService userService;
     private final GoogleTokenVerifierService googleTokenVerifierService;
 
-    public AuthController(GoogleTokenVerifierService googleTokenVerifierService) {
+    public AuthController(AuthenticationManager authManager, JwtService jwtService, UserService userService, GoogleTokenVerifierService googleTokenVerifierService) {
+        this.authManager = authManager;
+        this.jwtService = jwtService;
+        this.userService = userService;
         this.googleTokenVerifierService = googleTokenVerifierService;
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody UserRequestLoginDto userRequestLoginDto) {
         try {
-            Authentication authentication = authManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            userRequestLoginDto.getGmail(),
-                            userRequestLoginDto.getPassword()
-                    )
-            );
+            Authentication authentication = authManager.authenticate(new UsernamePasswordAuthenticationToken(userRequestLoginDto.getGmail(), userRequestLoginDto.getPassword()));
 
             String token = jwtService.generateToken(authentication);
             String tokenRefresh = jwtService.generateRefreshToken(authentication);
-            UserResponseDto user = userService.getByGmail(userRequestLoginDto.getGmail());
+            UserResponseDto user = userService.findByGmail(userRequestLoginDto.getGmail());
 
-            return ResponseEntity.ok(Map.of(
-                    "status", "success",
-                    "message", "User login successfully",
-                    "data", Map.of(
-                            "user", user,
-                            "accessToken", token,
-                            "refreshToken", tokenRefresh
-                    )
-            ));
+            return ResponseEntity.ok(Map.of("status", "success", "message", "User login successfully", "data", Map.of("user", user, "accessToken", token, "refreshToken", tokenRefresh)));
 
         } catch (BadCredentialsException ex) {
             throw new AuthenticationFailedException("Invalid username or password");
@@ -78,24 +61,11 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody UserRequestDto userRequestDto) {
         UserResponseDto createdUser = userService.createUser(userRequestDto);
-        Authentication authentication = authManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        userRequestDto.getGmail(),
-                        userRequestDto.getPassword()
-                )
-        );
+        Authentication authentication = authManager.authenticate(new UsernamePasswordAuthenticationToken(userRequestDto.getGmail(), userRequestDto.getPassword()));
         String token = jwtService.generateToken(authentication);
         String tokenRefresh = jwtService.generateRefreshToken(authentication);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                "status", "success",
-                "message", "User registered successfully",
-                "data", Map.of(
-                        "user", createdUser,
-                        "accessToken", token,
-                        "refreshToken", tokenRefresh
-                )
-        ));
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("status", "success", "message", "User registered successfully", "data", Map.of("user", createdUser, "accessToken", token, "refreshToken", tokenRefresh)));
     }
 
     @PostMapping("/google")
@@ -108,7 +78,7 @@ public class AuthController {
             String username = (String) payload.get("name");
             UserResponseDto userResponseDto;
             try {
-                userResponseDto = userService.getByGmail(email);
+                userResponseDto = userService.findByGmail(email);
             } catch (NotFoundException e) {
                 UserRequestDto requestDto = new UserRequestDto();
                 requestDto.setGmail(email);
@@ -117,31 +87,15 @@ public class AuthController {
                 userResponseDto = userService.createUser(requestDto);
             }
 
-            Authentication authentication = authManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            email,
-                            email
-                    )
-            );
+            Authentication authentication = authManager.authenticate(new UsernamePasswordAuthenticationToken(email, email));
 
             String accessToken = jwtService.generateToken(authentication);
             String refreshToken = jwtService.generateRefreshToken(authentication);
 
-            return ResponseEntity.ok(Map.of(
-                    "status", "success",
-                    "message", "Login with Google successful",
-                    "data", Map.of(
-                            "user", userResponseDto,
-                            "accessToken", accessToken,
-                            "refreshToken", refreshToken
-                    )
-            ));
+            return ResponseEntity.ok(Map.of("status", "success", "message", "Login with Google successful", "data", Map.of("user", userResponseDto, "accessToken", accessToken, "refreshToken", refreshToken)));
 
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
-                    "status", "error",
-                    "message", "Invalid ID token"
-            ));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("status", "error", "message", "Invalid ID token"));
         }
     }
 }

@@ -1,13 +1,15 @@
-package com.EdumentumBackend.EdumentumBackend;
+package com.EdumentumBackend.EdumentumBackend.controller.admin;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class TestController {
+@RequestMapping("/api/v1/admin")
+public class AdminControllerTest {
+
     @GetMapping("/test")
-    public String test () {
-        return "API USER";
+    public String adminGet() {
+        return "This is Admin API";
     }
 }

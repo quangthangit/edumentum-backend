@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
+import java.util.Set;
+
 @Entity
 @Table(name = "users")
 @Getter
@@ -17,32 +19,36 @@ public class UserEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
 
-    @NotBlank(message = "Email is required")
-    @Email(message = "Email should be valid")
-    @Size(max = 100, message = "Email must be at most 100 characters long")
+    @NotBlank
+    @Email
+    @Size(max = 100)
     @Column(nullable = false, unique = true)
     private String gmail;
 
-    @NotNull(message = "Username is required")
-    @Size(max = 20, message = "Username must be at most 20 characters long")
+    @NotNull
+    @Size(max = 20)
     @Column(nullable = false)
     private String username;
 
-    @NotBlank(message = "Password is required")
-    @Size(min = 6, message = "Password must be at least 6 characters long")
+    @NotBlank
+    @Size(min = 6)
     @Column(nullable = false)
     private String password;
 
     @Column
     private String googleId;
-    
+
     @Column
     private String facebookId;
-    
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role")
-    private Role role;
 
     @Column(nullable = false)
     private Boolean isActive = true;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<RoleEntity> roles;
 }

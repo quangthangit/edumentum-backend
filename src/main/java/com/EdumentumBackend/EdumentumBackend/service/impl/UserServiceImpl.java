@@ -2,26 +2,31 @@ package com.EdumentumBackend.EdumentumBackend.service.impl;
 
 import com.EdumentumBackend.EdumentumBackend.dtos.UserRequestDto;
 import com.EdumentumBackend.EdumentumBackend.dtos.UserResponseDto;
-import com.EdumentumBackend.EdumentumBackend.entity.Role;
+import com.EdumentumBackend.EdumentumBackend.entity.RoleEntity;
 import com.EdumentumBackend.EdumentumBackend.entity.UserEntity;
 import com.EdumentumBackend.EdumentumBackend.exception.AlreadyExistsException;
 import com.EdumentumBackend.EdumentumBackend.exception.NotFoundException;
 import com.EdumentumBackend.EdumentumBackend.repository.UserRepository;
+import com.EdumentumBackend.EdumentumBackend.service.RoleService;
 import com.EdumentumBackend.EdumentumBackend.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
 
-    @Autowired
     private UserRepository userRepository;
-
-    @Autowired
     private PasswordEncoder passwordEncoder;
+    private RoleService roleService;
+
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, RoleServiceImpl roleService) {
+        this.passwordEncoder = passwordEncoder;
+        this.roleService = roleService;
+        this.userRepository = userRepository;
+    }
 
     @Override
     public UserResponseDto createUser(UserRequestDto userRequestDto) {
@@ -29,13 +34,13 @@ public class UserServiceImpl implements UserService {
         if (userCheck.isPresent()) {
             throw new AlreadyExistsException("User with gmail " + userRequestDto.getGmail() + " already exists");
         }
-
+        RoleEntity role = roleService.findByName("ROLE_STUDENT");
         UserEntity user = UserEntity.builder()
                 .gmail(userRequestDto.getGmail())
                 .password(passwordEncoder.encode(userRequestDto.getPassword()))
                 .isActive(true)
                 .username(userRequestDto.getUsername())
-                .role(Role.ROLE_STUDENT)
+                .roles(Collections.singleton(role))
                 .build();
 
         UserEntity savedUser = userRepository.save(user);
@@ -45,12 +50,12 @@ public class UserServiceImpl implements UserService {
                 .gmail(savedUser.getGmail())
                 .isActive(savedUser.getIsActive())
                 .username(savedUser.getUsername())
-                .role(savedUser.getRole())
+                .roles(savedUser.getRoles())
                 .build();
     }
 
     @Override
-    public UserResponseDto getByGmail(String gmail) {
+    public UserResponseDto findByGmail(String gmail) {
         UserEntity user = userRepository.findByGmail(gmail)
                 .orElseThrow(() -> new NotFoundException("User with gmail " + gmail + " not found"));
         return UserResponseDto.builder()
@@ -58,7 +63,7 @@ public class UserServiceImpl implements UserService {
                 .gmail(user.getGmail())
                 .username(user.getUsername())
                 .isActive(user.getIsActive())
-                .role(user.getRole())
+                .roles(user.getRoles())
                 .build();
     }
 }
