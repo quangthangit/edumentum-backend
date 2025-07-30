@@ -53,14 +53,6 @@ public class GuestController {
             ));
         }
 
-        UserResponseDto currentUser = userService.findByEmail(email);
-        if (!"GUEST".equalsIgnoreCase(currentUser.getRoles().toString())) {
-            return ResponseEntity.status(403).body(Map.of(
-                    "status", "error",
-                    "error", "You are not allowed to change role"
-            ));
-        }
-
         userService.setUserRole(email, roleRequest.getRoleName());
 
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
