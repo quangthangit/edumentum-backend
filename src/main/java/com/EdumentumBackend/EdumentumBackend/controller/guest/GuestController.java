@@ -65,9 +65,10 @@ public class GuestController {
 
         return ResponseEntity.ok(Map.of(
                 "status", "success",
-                "data", userService.findByEmail(email),
-                "accessToken", accessToken,
-                "refreshToken", refreshToken
+                "message", "Login with Google successful",
+                "data", Map.of("user", userService.findByEmail(email),
+                        "accessToken", accessToken,
+                        "refreshToken", refreshToken)
         ));
     }
 }
