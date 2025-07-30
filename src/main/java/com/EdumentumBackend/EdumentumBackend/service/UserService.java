@@ -6,4 +6,5 @@ import com.EdumentumBackend.EdumentumBackend.dtos.UserResponseDto;
 public interface UserService {
     UserResponseDto createUser(UserRequestDto userRequestDto);
     UserResponseDto findByGmail(String gmail);
+    void setUserRole(String gmail, String roleName);
 }

@@ -14,13 +14,14 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class UserServiceImpl implements UserService {
 
-    private UserRepository userRepository;
-    private PasswordEncoder passwordEncoder;
-    private RoleService roleService;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final RoleService roleService;
 
     public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, RoleServiceImpl roleService) {
         this.passwordEncoder = passwordEncoder;
@@ -34,7 +35,7 @@ public class UserServiceImpl implements UserService {
         if (userCheck.isPresent()) {
             throw new AlreadyExistsException("User with gmail " + userRequestDto.getGmail() + " already exists");
         }
-        RoleEntity role = roleService.findByName("ROLE_STUDENT");
+        RoleEntity role = roleService.findByName("ROLE_GUEST");
         UserEntity user = UserEntity.builder()
                 .gmail(userRequestDto.getGmail())
                 .password(passwordEncoder.encode(userRequestDto.getPassword()))
@@ -50,7 +51,7 @@ public class UserServiceImpl implements UserService {
                 .gmail(savedUser.getGmail())
                 .isActive(savedUser.getIsActive())
                 .username(savedUser.getUsername())
-                .roles(savedUser.getRoles())
+                .roles(user.getRoles())
                 .build();
     }
 
@@ -66,4 +67,32 @@ public class UserServiceImpl implements UserService {
                 .roles(user.getRoles())
                 .build();
     }
+
+    @Override
+    public void setUserRole(String gmail, String roleName) {
+        UserEntity user = userRepository.findByGmail(gmail)
+                .orElseThrow(() -> new NotFoundException("User with Gmail " + gmail + " not found"));
+
+        if (!roleName.equals("ROLE_STUDENT") && !roleName.equals("ROLE_TEACHER")) {
+            throw new IllegalArgumentException("Invalid role: " + roleName);
+        }
+
+        RoleEntity newRole = roleService.findByName(roleName);
+        Set<RoleEntity> currentRoles = user.getRoles();
+
+        currentRoles.removeIf(role -> role.getName().equals("ROLE_GUEST"));
+
+        currentRoles.clear();
+        currentRoles.add(newRole);
+
+        user.setRoles(currentRoles);
+        userRepository.save(user);
+    }
+
+
+    private boolean hasOnlyGuestRole(Set<RoleEntity> roles) {
+        if (roles == null || roles.size() != 1) return false;
+        return roles.iterator().next().getName().equals("ROLE_GUEST");
+    }
+
 }

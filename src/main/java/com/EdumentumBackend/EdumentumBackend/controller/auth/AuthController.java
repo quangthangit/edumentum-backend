@@ -1,5 +1,6 @@
 package com.EdumentumBackend.EdumentumBackend.controller.auth;
 
+import com.EdumentumBackend.EdumentumBackend.dtos.RoleRequest;
 import com.EdumentumBackend.EdumentumBackend.dtos.UserRequestDto;
 import com.EdumentumBackend.EdumentumBackend.dtos.UserRequestLoginDto;
 import com.EdumentumBackend.EdumentumBackend.dtos.UserResponseDto;
@@ -49,7 +50,12 @@ public class AuthController {
             String tokenRefresh = jwtService.generateRefreshToken(authentication);
             UserResponseDto user = userService.findByGmail(userRequestLoginDto.getGmail());
 
-            return ResponseEntity.ok(Map.of("status", "success", "message", "User login successfully", "data", Map.of("user", user, "accessToken", token, "refreshToken", tokenRefresh)));
+            return ResponseEntity.ok(Map.of(
+                    "status", "success",
+                    "message", "User login successfully",
+                    "data", Map.of("user", user,
+                            "accessToken", token,
+                            "refreshToken", tokenRefresh)));
 
         } catch (BadCredentialsException ex) {
             throw new AuthenticationFailedException("Invalid username or password");
@@ -65,7 +71,12 @@ public class AuthController {
         String token = jwtService.generateToken(authentication);
         String tokenRefresh = jwtService.generateRefreshToken(authentication);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("status", "success", "message", "User registered successfully", "data", Map.of("user", createdUser, "accessToken", token, "refreshToken", tokenRefresh)));
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                "status", "success",
+                "message", "User registered successfully",
+                "data", Map.of("user", createdUser,
+                        "accessToken", token,
+                        "refreshToken", tokenRefresh)));
     }
 
     @PostMapping("/google")
@@ -92,7 +103,12 @@ public class AuthController {
             String accessToken = jwtService.generateToken(authentication);
             String refreshToken = jwtService.generateRefreshToken(authentication);
 
-            return ResponseEntity.ok(Map.of("status", "success", "message", "Login with Google successful", "data", Map.of("user", userResponseDto, "accessToken", accessToken, "refreshToken", refreshToken)));
+            return ResponseEntity.ok(Map.of(
+                    "status", "success",
+                    "message", "Login with Google successful",
+                    "data", Map.of("user", userResponseDto,
+                            "accessToken", accessToken,
+                            "refreshToken", refreshToken)));
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("status", "error", "message", "Invalid ID token"));
