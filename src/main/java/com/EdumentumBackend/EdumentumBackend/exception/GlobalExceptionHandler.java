@@ -14,17 +14,26 @@ import java.util.Map;
 public class GlobalExceptionHandler {
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<Map<String, String>> handleNotFound(NotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                "status", "error",
+                "message", ex.getMessage()
+        ));
     }
 
     @ExceptionHandler(AlreadyExistsException.class)
     public ResponseEntity<Map<String, String>> handleUserExists(AlreadyExistsException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+                "status", "error",
+                "message", ex.getMessage()
+        ));
     }
 
     @ExceptionHandler(AuthenticationFailedException.class)
     public ResponseEntity<?> handleAuthFail(AuthenticationFailedException ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                "status", "error",
+                "message", ex.getMessage()
+        ));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
