@@ -6,24 +6,27 @@ import com.EdumentumBackend.EdumentumBackend.dtos.UserRequestLoginDto;
 import com.EdumentumBackend.EdumentumBackend.dtos.UserResponseDto;
 import com.EdumentumBackend.EdumentumBackend.exception.AuthenticationFailedException;
 import com.EdumentumBackend.EdumentumBackend.exception.NotFoundException;
+import com.EdumentumBackend.EdumentumBackend.jwt.CustomUserDetailsService;
 import com.EdumentumBackend.EdumentumBackend.jwt.JwtService;
 import com.EdumentumBackend.EdumentumBackend.service.GoogleTokenVerifierService;
 import com.EdumentumBackend.EdumentumBackend.service.UserService;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -32,13 +35,15 @@ public class AuthController {
     private final AuthenticationManager authManager;
     private final JwtService jwtService;
     private final UserService userService;
+    private final CustomUserDetailsService customUserDetailsService;
     private final GoogleTokenVerifierService googleTokenVerifierService;
 
-    public AuthController(AuthenticationManager authManager, JwtService jwtService, UserService userService, GoogleTokenVerifierService googleTokenVerifierService) {
+    public AuthController(AuthenticationManager authManager, JwtService jwtService, UserService userService, CustomUserDetailsService customUserDetailsService, GoogleTokenVerifierService googleTokenVerifierService) {
         this.authManager = authManager;
         this.jwtService = jwtService;
         this.userService = userService;
         this.googleTokenVerifierService = googleTokenVerifierService;
+        this.customUserDetailsService = customUserDetailsService;
     }
 
     @PostMapping("/login")
@@ -82,23 +87,30 @@ public class AuthController {
     @PostMapping("/google")
     public ResponseEntity<?> loginWithGoogle(@RequestBody Map<String, String> request) {
         String token = request.get("token");
+        if (token == null || token.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("status", "error", "message", "Missing Google token"));
+        }
 
         try {
             GoogleIdToken.Payload payload = googleTokenVerifierService.verifyToken(token);
             String email = payload.getEmail();
             String username = (String) payload.get("name");
+
             UserResponseDto userResponseDto;
             try {
                 userResponseDto = userService.findByEmail(email);
             } catch (NotFoundException e) {
                 UserRequestDto requestDto = new UserRequestDto();
                 requestDto.setEmail(email);
-                requestDto.setPassword(email);
+                requestDto.setPassword(UUID.randomUUID().toString());
                 requestDto.setUsername(username);
                 userResponseDto = userService.createUser(requestDto);
             }
 
-            Authentication authentication = authManager.authenticate(new UsernamePasswordAuthenticationToken(email, email));
+            UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
+            Authentication authentication = new UsernamePasswordAuthenticationToken(
+                    userDetails, null, userDetails.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
             String accessToken = jwtService.generateToken(authentication);
             String refreshToken = jwtService.generateRefreshToken(authentication);
@@ -108,10 +120,14 @@ public class AuthController {
                     "message", "Login with Google successful",
                     "data", Map.of("user", userResponseDto,
                             "accessToken", accessToken,
-                            "refreshToken", refreshToken)));
-
+                            "refreshToken", refreshToken)
+            ));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("status", "error", "message", "Invalid ID token"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                    "status", "error",
+                    "message", "Invalid Google ID token"
+            ));
         }
     }
+
 }
