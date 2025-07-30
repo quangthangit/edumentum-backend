@@ -21,8 +21,8 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String gmail) {
-        UserEntity user = userRepository.findByGmail(gmail)
+    public UserDetails loadUserByUsername(String email) {
+        UserEntity user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         List<SimpleGrantedAuthority> authorities = user.getRoles().stream()
@@ -30,7 +30,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .toList();
 
         return new org.springframework.security.core.userdetails.User(
-                user.getGmail(),
+                user.getEmail(),
                 user.getPassword(),
                 authorities
         );

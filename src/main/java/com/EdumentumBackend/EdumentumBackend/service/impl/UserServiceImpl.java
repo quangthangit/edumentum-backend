@@ -31,13 +31,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDto createUser(UserRequestDto userRequestDto) {
-        Optional<UserEntity> userCheck = userRepository.findByGmail(userRequestDto.getGmail());
+        Optional<UserEntity> userCheck = userRepository.findByEmail(userRequestDto.getEmail());
         if (userCheck.isPresent()) {
-            throw new AlreadyExistsException("User with gmail " + userRequestDto.getGmail() + " already exists");
+            throw new AlreadyExistsException("User with gmail " + userRequestDto.getEmail() + " already exists");
         }
         RoleEntity role = roleService.findByName("ROLE_GUEST");
         UserEntity user = UserEntity.builder()
-                .gmail(userRequestDto.getGmail())
+                .email(userRequestDto.getEmail())
                 .password(passwordEncoder.encode(userRequestDto.getPassword()))
                 .isActive(true)
                 .username(userRequestDto.getUsername())
@@ -48,7 +48,7 @@ public class UserServiceImpl implements UserService {
 
         return UserResponseDto.builder()
                 .userId(savedUser.getUserId())
-                .gmail(savedUser.getGmail())
+                .email(savedUser.getEmail())
                 .isActive(savedUser.getIsActive())
                 .username(savedUser.getUsername())
                 .roles(user.getRoles())
@@ -56,12 +56,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseDto findByGmail(String gmail) {
-        UserEntity user = userRepository.findByGmail(gmail)
-                .orElseThrow(() -> new NotFoundException("User with gmail " + gmail + " not found"));
+    public UserResponseDto findByEmail(String email) {
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException("User with gmail " + email + " not found"));
         return UserResponseDto.builder()
                 .userId(user.getUserId())
-                .gmail(user.getGmail())
+                .email(user.getEmail())
                 .username(user.getUsername())
                 .isActive(user.getIsActive())
                 .roles(user.getRoles())
@@ -69,9 +69,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void setUserRole(String gmail, String roleName) {
-        UserEntity user = userRepository.findByGmail(gmail)
-                .orElseThrow(() -> new NotFoundException("User with Gmail " + gmail + " not found"));
+    public void setUserRole(String email, String roleName) {
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException("User with Gmail " + email + " not found"));
 
         if (!roleName.equals("ROLE_STUDENT") && !roleName.equals("ROLE_TEACHER")) {
             throw new IllegalArgumentException("Invalid role: " + roleName);

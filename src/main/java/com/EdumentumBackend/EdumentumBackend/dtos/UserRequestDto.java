@@ -17,7 +17,7 @@ public class UserRequestDto {
     @NotBlank(message = "Email is required")
     @Email(message = "Email should be valid")
     @Size(max = 100, message = "Email must be at most 100 characters long")
-    private String gmail;
+    private String email;
 
     @NotNull(message = "Username is required")
     @Size(max = 20, message = "Username must be at most 20 characters long")

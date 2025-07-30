@@ -23,7 +23,7 @@ public class UserEntity {
     @Email
     @Size(max = 100)
     @Column(nullable = false, unique = true)
-    private String gmail;
+    private String email;
 
     @NotNull
     @Size(max = 20)

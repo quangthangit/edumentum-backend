@@ -33,9 +33,9 @@ public class GuestController {
 
     @PostMapping("/set-user-role")
     public ResponseEntity<?> setUserRole(@Valid @RequestBody RoleRequest roleRequest) {
-        userService.setUserRole(roleRequest.getGmail(), roleRequest.getRoleName());
-        Authentication authentication = authManager.authenticate(new UsernamePasswordAuthenticationToken(roleRequest.getGmail(), roleRequest.getGmail()));
-        UserResponseDto userResponseDto = userService.findByGmail(roleRequest.getGmail());
+        userService.setUserRole(roleRequest.getEmail(), roleRequest.getRoleName());
+        Authentication authentication = authManager.authenticate(new UsernamePasswordAuthenticationToken(roleRequest.getEmail(), roleRequest.getEmail()));
+        UserResponseDto userResponseDto = userService.findByEmail(roleRequest.getEmail());
         String accessToken = jwtService.generateToken(authentication);
         String refreshToken = jwtService.generateRefreshToken(authentication);
 

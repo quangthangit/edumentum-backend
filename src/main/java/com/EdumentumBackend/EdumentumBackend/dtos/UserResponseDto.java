@@ -13,7 +13,7 @@ import java.util.Set;
 public class UserResponseDto {
     private Long userId;
     private String username;
-    private String gmail;
+    private String email;
     private Set<RoleEntity> roles;
     private Boolean isActive;
 }

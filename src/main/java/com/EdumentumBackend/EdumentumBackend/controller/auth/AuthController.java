@@ -44,11 +44,11 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody UserRequestLoginDto userRequestLoginDto) {
         try {
-            Authentication authentication = authManager.authenticate(new UsernamePasswordAuthenticationToken(userRequestLoginDto.getGmail(), userRequestLoginDto.getPassword()));
+            Authentication authentication = authManager.authenticate(new UsernamePasswordAuthenticationToken(userRequestLoginDto.getEmail(), userRequestLoginDto.getPassword()));
 
             String token = jwtService.generateToken(authentication);
             String tokenRefresh = jwtService.generateRefreshToken(authentication);
-            UserResponseDto user = userService.findByGmail(userRequestLoginDto.getGmail());
+            UserResponseDto user = userService.findByEmail(userRequestLoginDto.getEmail());
 
             return ResponseEntity.ok(Map.of(
                     "status", "success",
@@ -67,7 +67,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody UserRequestDto userRequestDto) {
         UserResponseDto createdUser = userService.createUser(userRequestDto);
-        Authentication authentication = authManager.authenticate(new UsernamePasswordAuthenticationToken(userRequestDto.getGmail(), userRequestDto.getPassword()));
+        Authentication authentication = authManager.authenticate(new UsernamePasswordAuthenticationToken(userRequestDto.getEmail(), userRequestDto.getPassword()));
         String token = jwtService.generateToken(authentication);
         String tokenRefresh = jwtService.generateRefreshToken(authentication);
 
@@ -89,10 +89,10 @@ public class AuthController {
             String username = (String) payload.get("name");
             UserResponseDto userResponseDto;
             try {
-                userResponseDto = userService.findByGmail(email);
+                userResponseDto = userService.findByEmail(email);
             } catch (NotFoundException e) {
                 UserRequestDto requestDto = new UserRequestDto();
-                requestDto.setGmail(email);
+                requestDto.setEmail(email);
                 requestDto.setPassword(email);
                 requestDto.setUsername(username);
                 userResponseDto = userService.createUser(requestDto);

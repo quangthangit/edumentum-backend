@@ -19,5 +19,5 @@ public class RoleRequest {
     @Email
     @Size(max = 100)
     @Column(nullable = false, unique = true)
-    private String gmail;
+    private String email;
 }
