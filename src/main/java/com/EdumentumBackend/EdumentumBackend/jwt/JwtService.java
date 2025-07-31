@@ -34,6 +34,15 @@ public class JwtService {
     }
 
     public String generateToken(Authentication authentication) {
+        return getString(authentication, expirationMs);
+    }
+
+
+    public String generateRefreshToken(Authentication authentication) {
+        return getString(authentication, expirationMsRefresh);
+    }
+
+    private String getString(Authentication authentication, long expirationMsRefresh) {
         String username = authentication.getName();
         var roles = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
@@ -42,17 +51,6 @@ public class JwtService {
         return Jwts.builder()
                 .setSubject(username)
                 .claim("roles", roles)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
-                .signWith(secretKey, SignatureAlgorithm.HS256)
-                .compact();
-    }
-
-
-    public String generateRefreshToken(Authentication authentication) {
-        String username = authentication.getName();
-        return Jwts.builder()
-                .setSubject(username)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expirationMsRefresh))
                 .signWith(secretKey, SignatureAlgorithm.HS256)

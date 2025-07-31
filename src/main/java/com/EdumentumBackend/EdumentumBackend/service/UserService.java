@@ -7,4 +7,5 @@ public interface UserService {
     UserResponseDto createUser(UserRequestDto userRequestDto);
     UserResponseDto findByEmail(String email);
     void setUserRole(String gmail, String roleName);
+    void deleteById(Long id);
 }

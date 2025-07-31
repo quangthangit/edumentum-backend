@@ -89,6 +89,15 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
+    @Override
+    public void deleteById(Long id) {
+        Optional<UserEntity> userEntity = userRepository.findById(id);
+        if (userEntity.isPresent()) {
+            userRepository.delete(userEntity.get());
+        } else {
+            throw new NotFoundException("User with ID " + id + " not found.");
+        }
+    }
 
     private boolean hasOnlyGuestRole(Set<RoleEntity> roles) {
         if (roles == null || roles.size() != 1) return false;

@@ -3,6 +3,8 @@ package com.EdumentumBackend.EdumentumBackend.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import java.util.Set;
 
@@ -13,6 +15,8 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@SQLDelete( sql = "UPDATE users SET deleted = true WHERE user_id = ?")
+@Where(clause = "deleted = false")
 public class UserEntity {
 
     @Id
@@ -51,4 +55,11 @@ public class UserEntity {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<RoleEntity> roles;
+
+    private boolean deleted = false;
+
+    @PreRemove
+    private void preRemove() {
+        this.roles.clear();
+    }
 }
