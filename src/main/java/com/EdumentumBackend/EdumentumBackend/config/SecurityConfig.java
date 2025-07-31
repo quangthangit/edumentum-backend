@@ -1,5 +1,6 @@
 package com.EdumentumBackend.EdumentumBackend.config;
 
+import com.EdumentumBackend.EdumentumBackend.exception.CustomAccessDeniedHandler;
 import com.EdumentumBackend.EdumentumBackend.jwt.CustomUserDetailsService;
 import com.EdumentumBackend.EdumentumBackend.jwt.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomAccessDeniedHandler customAccessDeniedHandler) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfig()))
@@ -45,7 +46,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/student/**").hasAnyRole("STUDENT")
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
-                )
+                ).exceptionHandling(ex ->ex.accessDeniedHandler(customAccessDeniedHandler))
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .userDetailsService(userDetailsService)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
