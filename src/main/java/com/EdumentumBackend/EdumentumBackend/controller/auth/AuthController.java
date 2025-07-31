@@ -1,6 +1,5 @@
 package com.EdumentumBackend.EdumentumBackend.controller.auth;
 
-import com.EdumentumBackend.EdumentumBackend.dtos.RoleRequest;
 import com.EdumentumBackend.EdumentumBackend.dtos.UserRequestDto;
 import com.EdumentumBackend.EdumentumBackend.dtos.UserRequestLoginDto;
 import com.EdumentumBackend.EdumentumBackend.dtos.UserResponseDto;
