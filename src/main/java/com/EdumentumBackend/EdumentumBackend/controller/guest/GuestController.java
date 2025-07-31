@@ -42,10 +42,10 @@ public class GuestController {
         }
 
         String token = authHeader.substring(7);
-        String email;
+        Long userId;
 
         try {
-            email = jwtService.extractUsername(token);
+            userId = jwtService.extractUserId(token);
         } catch (Exception e) {
             return ResponseEntity.status(401).body(Map.of(
                     "status", "error",
@@ -53,9 +53,13 @@ public class GuestController {
             ));
         }
 
-        userService.setUserRole(email, roleRequest.getRoleName());
+        userService.setUserRole(userId, roleRequest.getRoleName());
+        UserResponseDto userResponseDto = userService.findById(userId);
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(userResponseDto.getEmail());
+        return getResponseEntity(userResponseDto, userDetails, jwtService);
+    }
 
-        UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
+    public static ResponseEntity<?> getResponseEntity(UserResponseDto userResponseDto, UserDetails userDetails, JwtService jwtService) {
         Authentication authentication = new UsernamePasswordAuthenticationToken(
                 userDetails, null, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -66,7 +70,7 @@ public class GuestController {
         return ResponseEntity.ok(Map.of(
                 "status", "success",
                 "message", "Login with Google successful",
-                "data", Map.of("user", userService.findByEmail(email),
+                "data", Map.of("user", userResponseDto,
                         "accessToken", accessToken,
                         "refreshToken", refreshToken)
         ));

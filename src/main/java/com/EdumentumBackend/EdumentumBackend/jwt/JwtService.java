@@ -48,9 +48,13 @@ public class JwtService {
                 .map(GrantedAuthority::getAuthority)
                 .toList();
 
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        Long userId = userDetails.getId();
+
         return Jwts.builder()
                 .setSubject(username)
                 .claim("roles", roles)
+                .claim("userId", userId)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expirationMsRefresh))
                 .signWith(secretKey, SignatureAlgorithm.HS256)
@@ -65,6 +69,16 @@ public class JwtService {
                 .getBody()
                 .getSubject();
     }
+
+    public Long extractUserId(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("userId", Long.class);
+    }
+
 
     public boolean validateToken(String token) {
         try {
