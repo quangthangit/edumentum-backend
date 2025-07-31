@@ -5,6 +5,7 @@ import com.EdumentumBackend.EdumentumBackend.entity.QuizCreationType;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.security.core.userdetails.User;
 
 import java.util.List;
 
@@ -14,6 +15,7 @@ import java.util.List;
 public class QuizResponseDto {
     private Long quizId;
     private String title;
+    private UserResponseDto userResponseDto;
     private String description;
     private boolean visibility;
     private int total;

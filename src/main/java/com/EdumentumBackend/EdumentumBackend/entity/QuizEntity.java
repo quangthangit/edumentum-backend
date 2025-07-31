@@ -37,4 +37,8 @@ public class QuizEntity {
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "quiz_question_id", referencedColumnName = "quizQuestionId")
     private QuizQuestionEntity quizQuestion;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private UserEntity user;
 }
