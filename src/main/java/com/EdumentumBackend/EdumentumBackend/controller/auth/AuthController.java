@@ -27,6 +27,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 import java.util.UUID;
 
+import static com.EdumentumBackend.EdumentumBackend.controller.guest.GuestController.getResponseEntity;
+
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
@@ -107,20 +109,7 @@ public class AuthController {
             }
 
             UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
-            Authentication authentication = new UsernamePasswordAuthenticationToken(
-                    userDetails, null, userDetails.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            String accessToken = jwtService.generateToken(authentication);
-            String refreshToken = jwtService.generateRefreshToken(authentication);
-
-            return ResponseEntity.ok(Map.of(
-                    "status", "success",
-                    "message", "Login with Google successful",
-                    "data", Map.of("user", userResponseDto,
-                            "accessToken", accessToken,
-                            "refreshToken", refreshToken)
-            ));
+            return getResponseEntity(userResponseDto, userDetails, jwtService);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
                     "status", "error",

@@ -69,9 +69,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void setUserRole(String email, String roleName) {
-        UserEntity user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new NotFoundException("User with Gmail " + email + " not found"));
+    public void setUserRole(Long userId, String roleName) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User with UserId " + userId + " not found"));
 
         if (!roleName.equals("ROLE_STUDENT") && !roleName.equals("ROLE_TEACHER")) {
             throw new IllegalArgumentException("Invalid role: " + roleName);
@@ -97,6 +97,19 @@ public class UserServiceImpl implements UserService {
         } else {
             throw new NotFoundException("User with ID " + id + " not found.");
         }
+    }
+
+    @Override
+    public UserResponseDto findById(Long userId) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User with UserId " + userId + " not found"));
+        return UserResponseDto.builder()
+                .userId(user.getUserId())
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .isActive(user.getIsActive())
+                .roles(user.getRoles())
+                .build();
     }
 
     private boolean hasOnlyGuestRole(Set<RoleEntity> roles) {
